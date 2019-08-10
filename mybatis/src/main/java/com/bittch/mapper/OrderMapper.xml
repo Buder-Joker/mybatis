@@ -1,0 +1,78 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bittch.mapper.OrderMapper">
+    <select id="QuerOrderToUser" resultType="com.bittch.po.OrdersEx">
+    select
+        orders.*,
+        user.username,
+        user.address,
+        user.sex
+    from
+        user,orders
+    where
+        orders.user_id=user.id;
+    </select>
+
+    <!--对resultMap的定义-->
+    <resultMap id="queryOrderToItemsResultMap" type="com.bittch.po.Orders">
+        <!--orders-->
+        <!--user   association-->
+        <!--orderdetail   collection-->
+        <id column="id" property="id"/>
+        <result column="user_id" property="userid"/>
+        <result column="number" property="number"/>
+        <result column="createtime" property="createtime"/>
+        <result column="note" property="note"/>
+        <!--关联user表-->
+        <association property="user" javaType="com.bittch.po.User">
+            <id column="user_id" property="id"/>
+            <result column="username" property="username"/>
+            <result column="sex" property="sex"/>
+            <result column="address" property="address"/>
+        </association>
+        <!--关联OrderDetail表-->
+        <collection property="orderdetailList" ofType="com.bittch.po.Orderdetail">
+            <id column="OrderDetailID" property="id"/>
+            <result column="orders_id" property="ordersId"/>
+            <result column="items_id" property="itemsId"/>
+            <result column="items_num" property="itemsNum"/>
+            <!--items  collection-->
+            <!--通过orderdetail关联商品item表-->
+            <association property="items" javaType="com.bittch.po.Items">
+                <id column="ItemsID" property="id"/>
+                <result column="name" property="name"/>
+                <result column="detail" property="detail"/>
+                <result column="price" property="price"/>
+            </association>
+        </collection>
+
+
+    </resultMap>
+    <select id="queryOrderToItems" resultMap="queryOrderToItemsResultMap">
+        select
+            orders.*,
+            user.username,
+            user.address,
+            user.sex,
+            orderdetail.id as OrderDetailID,
+            orderdetail.orders_id,
+            orderdetail.items_id,
+            orderdetail.items_num,
+            items.id as ItemsID,
+            items.name,
+            items.detail,
+            items.price
+        from
+            orders,
+            user,
+            orderdetail,
+            items
+        where
+            orders.user_id = user.id
+            and
+            orders.id = orderdetail.orders_id
+            and
+            orderdetail.items_id = items.id;
+    </select>
+
+</mapper>
